@@ -1,0 +1,7 @@
+venv/
+chroma_db/
+big_work/
+__pycache__/
+*.log
+*.bak
+*.tmp
