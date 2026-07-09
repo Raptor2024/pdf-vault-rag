@@ -9,14 +9,13 @@ Prints the top matching chunks with their source file and heading.
 import sys
 from pathlib import Path
 
-import requests
 import chromadb
+
+from embeddings import embed
 
 RAG_DIR = Path(__file__).resolve().parent
 DB_PATH = RAG_DIR / "chroma_db"
 COLLECTION = "book_notes"
-OLLAMA_URL = "http://localhost:11434/api/embed"
-EMBED_MODEL = "nomic-embed-text"
 
 
 def main() -> None:
@@ -25,9 +24,7 @@ def main() -> None:
     question = sys.argv[1]
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 5
 
-    r = requests.post(OLLAMA_URL, json={"model": EMBED_MODEL, "input": [question]}, timeout=60)
-    r.raise_for_status()
-    qvec = r.json()["embeddings"][0]
+    qvec = embed([question])[0]
 
     col = chromadb.PersistentClient(path=str(DB_PATH)).get_collection(COLLECTION)
     res = col.query(query_embeddings=[qvec], n_results=n)

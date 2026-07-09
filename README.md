@@ -74,6 +74,23 @@ venv/bin/python normalize_long_s.py "old-scan.md" --dry-run
   col = chromadb.PersistentClient(path="pdf-vault-rag/chroma_db").get_collection("book_notes")
   ```
 
+## Don't use Ollama? No problem
+
+The tool needs an **embedding model**, not a chat LLM — and it speaks two APIs:
+
+- **Ollama** (default): `ollama pull nomic-embed-text` and you're done.
+- **Any OpenAI-compatible server** — LM Studio, Jan, llama.cpp server, GPT4All,
+  LocalAI, or OpenAI itself. Set three environment variables:
+  ```
+  set EMBED_PROVIDER=openai
+  set EMBED_URL=http://localhost:1234/v1        (LM Studio's default)
+  set EMBED_MODEL=text-embedding-nomic-embed-text-v1.5
+  ```
+  (Hosted services also need `EMBED_API_KEY`. See `embeddings.py` for details.)
+
+⚠️ An index is tied to the model that built it — if you switch embedding
+models, delete `chroma_db/` and re-run `build_index.py`.
+
 ## Notes & limits
 
 - First Docling run downloads its layout/OCR models (~500MB, one time).

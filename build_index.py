@@ -3,7 +3,7 @@
 - Reads every .md file under the vault (default: the folder containing this tool),
   skipping .obsidian and the rag folder itself.
 - Chunks by markdown headings, then splits oversized sections with overlap.
-- Embeds with Ollama's nomic-embed-text (local, no API key).
+- Embeds via embeddings.py — Ollama by default, or any OpenAI-compatible server (see embeddings.py for configuration).
 - Persists to ChromaDB at rag/chroma_db (collection: book_notes).
 
 Re-running is safe: files whose content is unchanged are skipped;
@@ -18,25 +18,18 @@ import sys
 import time
 from pathlib import Path
 
-import requests
 import chromadb
+
+from embeddings import embed
 
 RAG_DIR = Path(__file__).resolve().parent
 NOTES_ROOT = RAG_DIR.parent
 DEFAULT_VAULT = NOTES_ROOT
 DB_PATH = RAG_DIR / "chroma_db"
 COLLECTION = "book_notes"
-OLLAMA_URL = "http://localhost:11434/api/embed"
-EMBED_MODEL = "nomic-embed-text"
 MAX_CHARS = 2500      # target max chunk size
 OVERLAP = 300         # overlap when splitting oversized sections
 SKIP_DIRS = {".obsidian", "rag", "chroma_db"}
-
-
-def embed(texts: list[str]) -> list[list[float]]:
-    r = requests.post(OLLAMA_URL, json={"model": EMBED_MODEL, "input": texts}, timeout=120)
-    r.raise_for_status()
-    return r.json()["embeddings"]
 
 
 def split_long(text: str) -> list[str]:
