@@ -3,3 +3,4 @@ requests
 docling
 wordfreq
 pypdf
+mcp        # optional: only for mcp_server.py

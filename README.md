@@ -91,6 +91,23 @@ The tool needs an **embedding model**, not a chat LLM — and it speaks two APIs
 ⚠️ An index is tied to the model that built it — if you switch embedding
 models, delete `chroma_db/` and re-run `build_index.py`.
 
+## For AI agents (MCP + skill)
+
+Your agent can use this vault as a capability — point it at a PDF and it
+converts, indexes, and searches on its own.
+
+**MCP server** (works with Claude Code/Desktop, and any MCP-capable agent):
+```
+venv\Scripts\pip install mcp
+claude mcp add pdf-vault -- <path-to>\venv\Scripts\python.exe <path-to>\mcp_server.py
+```
+This gives the agent three tools: `convert_pdf(path)`, `update_index()`,
+`search_vault(query)`.
+
+**Skill**: `SKILL.md` in this repo follows the Claude/agent skill format —
+agents that scan skill folders will pick up the commands and usage rules
+automatically.
+
 ## Notes & limits
 
 - First Docling run downloads its layout/OCR models (~500MB, one time).
