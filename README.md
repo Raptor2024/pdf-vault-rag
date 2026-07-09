@@ -8,13 +8,13 @@ your [Obsidian](https://obsidian.md) vault (or any folder of markdown notes).
 - 🏺 **Long-s normalization** for 18th/19th-century scans
   (`confideration` → `consideration`, while real f-words are left alone)
 - 🧠 **Semantic search** over all your notes via ChromaDB +
-  [Ollama](https://ollama.com) embeddings — **100% local, no API keys, no cloud**
+  [Ollama](https://ollama.com) embeddings **100% local, no API keys, no cloud**
 - 🖱️ **Point-and-click UI** (Windows) or plain CLI (any OS)
 - 💪 **Huge-PDF mode**: files over 300MB are split into 200-page parts,
   converted resumably (a crash loses minutes, not hours), and stitched back
 
 Built by a researcher who needed 18,000 pages of 18th-century legal sources
-searchable next to his notes. Shared in the hope it saves you the same week.
+searchable next to his notes. Shared in the hope it saves you the same work.
 
 ## Setup
 
@@ -67,7 +67,7 @@ venv/bin/python normalize_long_s.py "old-scan.md" --dry-run
   in this folder. File-hash tracking makes re-runs incremental.
 - `query.py` embeds your question and returns the top chunks with source file
   + heading, so you can jump straight to the note.
-- The ChromaDB collection (`book_notes`) is standard — point any RAG agent or
+- The ChromaDB collection (`book_notes`) is standard point any RAG agent or
   pipeline at it:
   ```python
   import chromadb
@@ -79,7 +79,7 @@ venv/bin/python normalize_long_s.py "old-scan.md" --dry-run
 - First Docling run downloads its layout/OCR models (~500MB, one time).
 - A 400-page scanned book ≈ 30–60 min of CPU OCR; born-digital PDFs are fast.
 - Long-s normalization only fixes words where an f→s swap yields a more common
-  English word (dictionary-frequency based) — it never invents text. Verify
+  English word (dictionary-frequency based) it never invents text. Verify
   quotes against the original scan before publishing them.
 - Everything stays on your machine. Nothing is uploaded anywhere.
 
