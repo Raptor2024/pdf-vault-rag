@@ -69,9 +69,13 @@ def search_vault(query: str, n_results: int = 5) -> str:
         return "No index yet — call update_index() first."
     col = chromadb.PersistentClient(path=str(DB_PATH)).get_collection(COLLECTION)
     res = col.query(query_embeddings=[embed([query])[0]], n_results=int(n_results))
+    # Give agents ABSOLUTE paths — they will try to read the full file next.
+    vault = RAG_DIR.parent
     parts = []
     for doc, meta, dist in zip(res["documents"][0], res["metadatas"][0], res["distances"][0]):
-        parts.append(f"[{meta['source']} > {meta['heading']}] (distance {dist:.3f})\n{doc[:1200]}")
+        full = vault / meta["source"]
+        parts.append(f"[{meta['source']} > {meta['heading']}] (distance {dist:.3f})\n"
+                     f"full file: {full}\n{doc[:1200]}")
     return "\n\n---\n\n".join(parts) if parts else "No results."
 
 
