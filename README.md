@@ -60,6 +60,31 @@ venv/bin/python query.py "what did the 1771 dictionary mean by 'arms'?"
 venv/bin/python normalize_long_s.py "old-scan.md" --dry-run
 ```
 
+### Batch-converting a whole folder
+
+Point `pdf_to_md.py` (or the UI's Convert button) at a folder and it works
+down the list one PDF at a time:
+
+- Already-converted PDFs are **skipped automatically**, so you can add files
+  to the folder over time and just re-run. Interrupting a batch is safe; the
+  next run picks up where it left off.
+- PDFs over 300MB are automatically routed through the resumable split mode.
+- It is **not recursive**: it converts the PDFs in the folder you give it,
+  not in subfolders. Point it at each subfolder separately (this is
+  deliberate, so you can't accidentally queue a week of OCR).
+- Big scanned books take a long time (see Notes & limits). Starting a large
+  batch before bed works well.
+
+## What Docling actually does (for the curious)
+
+[Docling](https://github.com/docling-project/docling) is IBM's open-source
+document understanding library. For each page it detects the layout (columns,
+headings, tables, images), runs OCR when the page is a scanned image rather
+than digital text, and reconstructs everything as clean Markdown in reading
+order. That's why this tool handles a photographed 1771 book, not just modern
+PDFs: the OCR reads the page image itself. The first run downloads Docling's
+layout and OCR models (~500MB, one time); after that it works fully offline.
+
 ## How it works
 
 - `build_index.py` chunks every `.md` in the vault by heading (max ~2,500 chars,
