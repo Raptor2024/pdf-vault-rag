@@ -77,7 +77,7 @@ class App(tk.Tk):
             self.status.config(text="Conversion running — button re-enables when it finishes.", fg="#b06000")
         else:
             self.convert_btn.config(state="normal")
-            self.status.config(text="Idle. Inbox: " + str(INBOX), fg="gray")
+            self.status.config(text="✓ Ready for next conversion — add PDFs and hit Convert.", fg="#0a7d2c")
             self.refresh()
         self.after(15000, self.poll)
 
