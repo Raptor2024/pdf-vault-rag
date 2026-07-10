@@ -60,6 +60,12 @@ def normalize_text(text: str) -> tuple[str, int]:
     """Return (normalized_text, number_of_words_changed)."""
     changed = 0
 
+    # Literal long-s characters are ALWAYS 's' — fix unconditionally first.
+    n_literal = text.count("ſ")
+    if n_literal:
+        text = text.replace("ſ", "s")
+        changed += n_literal
+
     def repl(m: re.Match) -> str:
         nonlocal changed
         fixed = best_variant(m.group(0))
