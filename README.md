@@ -76,10 +76,10 @@ venv/bin/python normalize_long_s.py "old-scan.md" --dry-run
 
 ## Don't use Ollama? No problem
 
-The tool needs an **embedding model**, not a chat LLM — and it speaks two APIs:
+The tool needs an **embedding model**, not a chat LLM and it speaks to APIs:
 
 - **Ollama** (default): `ollama pull nomic-embed-text` and you're done.
-- **Any OpenAI-compatible server** — LM Studio, Jan, llama.cpp server, GPT4All,
+- **Any OpenAI-compatible server** LM Studio, Jan, llama.cpp server, GPT4All,
   LocalAI, or OpenAI itself. Set three environment variables:
   ```
   set EMBED_PROVIDER=openai
@@ -88,12 +88,12 @@ The tool needs an **embedding model**, not a chat LLM — and it speaks two APIs
   ```
   (Hosted services also need `EMBED_API_KEY`. See `embeddings.py` for details.)
 
-⚠️ An index is tied to the model that built it — if you switch embedding
+⚠️ An index is tied to the model that built it if you switch embedding
 models, delete `chroma_db/` and re-run `build_index.py`.
 
 ## For AI agents (MCP + skill)
 
-Your agent can use this vault as a capability — point it at a PDF and it
+Your agent can use this vault as a capability point it at a PDF and it
 converts, indexes, and searches on its own.
 
 **MCP server** (works with Claude Code/Desktop, and any MCP-capable agent):
@@ -119,4 +119,4 @@ automatically.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT see [LICENSE](LICENSE).
