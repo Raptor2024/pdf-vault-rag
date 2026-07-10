@@ -123,6 +123,14 @@ def main() -> None:
             )
         total_new += len(chunks)
 
+    # Prune chunks whose source file no longer exists in the vault.
+    current = {p.relative_to(vault).as_posix() for p in md_files}
+    existing_meta = col.get(include=["metadatas"])
+    stale = {m["source"] for m in existing_meta["metadatas"]} - current
+    for gone in sorted(stale):
+        col.delete(where={"source": gone})
+        print(f"  pruned     {gone} (file removed from vault)")
+
     print(f"\nDone. {total_new} chunks embedded this run; collection now holds {col.count()} chunks.")
 
 
