@@ -17,23 +17,33 @@ from tkinter import filedialog, messagebox
 
 RAG_DIR = Path(__file__).resolve().parent
 INBOX = RAG_DIR.parent / "PDF Inbox"
-IMPORTS = RAG_DIR.parent / "_pdf_imports"
+IMPORTS = RAG_DIR.parent / "Article VI Book" / "_pdf_imports"
 BAT = RAG_DIR / "Convert PDFs.bat"
 
 
-def conversion_running() -> bool:
-    """True if any pdf_to_md / build_index python process is running."""
+def conversion_running() -> str | None:
+    """If a conversion/index job is running, describe it; else None."""
     try:
         out = subprocess.run(
             ["powershell", "-NoProfile", "-Command",
              "(Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | "
-             "Where-Object { $_.CommandLine -match 'pdf_to_md|build_index' }).Count"],
+             "Where-Object { $_.CommandLine -match 'pdf_to_md|build_index' } | "
+             "Select-Object -First 1 -ExpandProperty CommandLine)"],
             capture_output=True, text=True, timeout=30,
             creationflags=subprocess.CREATE_NO_WINDOW,
         )
-        return int(out.stdout.strip() or 0) > 0
+        cmd = out.stdout.strip()
+        if not cmd:
+            return None
+        if "build_index" in cmd:
+            return "updating search index"
+        # last quoted or bare argument = the target pdf/folder
+        args = [a.strip('"') for a in cmd.replace("'", '"').split('"') if a.strip()]
+        target = Path(args[-1]).name if args else ""
+        big = " (big-file mode)" if "pdf_to_md_big" in cmd else ""
+        return f"converting {target}{big}" if target else "converting"
     except Exception:
-        return False  # if the check fails, don't block the user
+        return None  # if the check fails, don't block the user
 
 
 class App(tk.Tk):
@@ -72,9 +82,10 @@ class App(tk.Tk):
             self.listbox.insert("end", "  (inbox is empty — click Add PDFs…)")
 
     def poll(self):
-        if conversion_running():
+        job = conversion_running()
+        if job:
             self.convert_btn.config(state="disabled")
-            self.status.config(text="Conversion running — button re-enables when it finishes.", fg="#b06000")
+            self.status.config(text=f"⏳ Working: {job} — button re-enables when done.", fg="#b06000")
         else:
             self.convert_btn.config(state="normal")
             self.status.config(text="✓ Ready for next conversion — add PDFs and hit Convert.", fg="#0a7d2c")
@@ -96,7 +107,7 @@ class App(tk.Tk):
         self.refresh()
 
     def convert(self):
-        if conversion_running():
+        if conversion_running() is not None:
             messagebox.showwarning("Already running", "A conversion is already in progress.\nWait for it to finish first.")
             return
         if not any(INBOX.glob("*.pdf")):
