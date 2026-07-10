@@ -12,11 +12,11 @@ folder for every command.
 ## Commands
 
 Convert a PDF to Markdown (lands in ../_pdf_imports; scanned books get OCR;
-files >300MB auto-split with resume support — safe to re-run after a crash):
+files >300MB auto-split with resume support: safe to re-run after a crash):
 
     venv/Scripts/python.exe pdf_to_md.py "<path-to-pdf-or-folder>"
 
-Update the search index (incremental — run after conversions or note edits):
+Update the search index (incremental: run after conversions or note edits):
 
     venv/Scripts/python.exe build_index.py
 

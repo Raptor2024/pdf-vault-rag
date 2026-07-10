@@ -79,16 +79,16 @@ class App(tk.Tk):
             self.listbox.insert("end", f" {mark} {pdf.name}")
             self.listbox.itemconfig("end", fg="green" if done else "black")
         if not pdfs:
-            self.listbox.insert("end", "  (inbox is empty — click Add PDFs…)")
+            self.listbox.insert("end", "  (inbox is empty: click Add PDFs...)")
 
     def poll(self):
         job = conversion_running()
         if job:
             self.convert_btn.config(state="disabled")
-            self.status.config(text=f"⏳ Working: {job} — button re-enables when done.", fg="#b06000")
+            self.status.config(text=f"⏳ Working: {job}. Button re-enables when done.", fg="#b06000")
         else:
             self.convert_btn.config(state="normal")
-            self.status.config(text="✓ Ready for next conversion — add PDFs and hit Convert.", fg="#0a7d2c")
+            self.status.config(text="✓ Ready for next conversion. Add PDFs and hit Convert.", fg="#0a7d2c")
             self.refresh()
         self.after(15000, self.poll)
 
