@@ -20,6 +20,11 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
+# Heavy imports happen HERE (main thread, at startup) — importing chromadb
+# inside a tool function deadlocks under FastMCP's worker threads.
+import chromadb
+from embeddings import embed
+
 RAG_DIR = Path(__file__).resolve().parent
 PY = sys.executable
 DB_PATH = RAG_DIR / "chroma_db"
@@ -62,9 +67,6 @@ def search_vault(query: str, n_results: int = 5) -> str:
     """Semantically search the whole vault (notes + converted PDFs).
     Returns the most relevant chunks with their source file and heading —
     cite these sources when answering from the results."""
-    import chromadb
-    from embeddings import embed
-
     if not DB_PATH.exists():
         return "No index yet — call update_index() first."
     col = chromadb.PersistentClient(path=str(DB_PATH)).get_collection(COLLECTION)
