@@ -1,8 +1,11 @@
 """Little UI for the PDF -> Markdown pipeline.
 
 - "Add PDFs..." copies chosen PDFs into the PDF Inbox
-- The list shows every PDF in the inbox and whether it's converted yet
+- The list shows only work REMAINING: converted PDFs are archived into
+  "PDF Inbox/Converted" automatically, so the window is empty when all done
 - "Convert now" launches Convert PDFs.bat in a console window
+- The status bar names the exact PDF being converted (via the .converting
+  status file the converter writes)
 - "Stop" kills a running conversion (and its console window) after confirming
 - Refuses to start a second conversion while one is running
 - Opens with a fresh, current view every time (no stale state carried over)
@@ -19,8 +22,10 @@ from tkinter import filedialog, messagebox
 
 RAG_DIR = Path(__file__).resolve().parent
 INBOX = RAG_DIR.parent / "PDF Inbox"
-IMPORTS = RAG_DIR.parent / "Article VI Book" / "_pdf_imports"
+CONVERTED = INBOX / "Converted"
+IMPORTS = RAG_DIR.parent / "_pdf_imports"
 BAT = RAG_DIR / "Convert PDFs.bat"
+STATUS_FILE = RAG_DIR / ".converting"  # written by pdf_to_md.py: current PDF name
 
 # Matches the conversion worker processes and the console window running the
 # batch file - but NOT this UI (its launcher is "PDF Converter.bat", which does
@@ -48,7 +53,15 @@ def conversion_running() -> str | None:
             return None
         if "build_index" in cmd:
             return "updating search index"
-        # last quoted or bare argument = the target pdf/folder
+        # The converter writes the exact PDF it is on into the status file.
+        try:
+            name = STATUS_FILE.read_text(encoding="utf-8").strip()
+            if name:
+                big = " (big-file mode)" if "pdf_to_md_big" in cmd else ""
+                return f"converting {name}{big}"
+        except OSError:
+            pass
+        # Fallback: last quoted or bare argument = the target pdf/folder
         args = [a.strip('"') for a in cmd.replace("'", '"').split('"') if a.strip()]
         target = Path(args[-1]).name if args else ""
         big = " (big-file mode)" if "pdf_to_md_big" in cmd else ""
@@ -105,16 +118,36 @@ class App(tk.Tk):
         self.refresh()
         self.poll()
 
+    def _archive_converted(self) -> int:
+        """Move inbox PDFs that already have a converted .md into
+        PDF Inbox/Converted, so the list only shows work remaining."""
+        moved = 0
+        for pdf in sorted(INBOX.glob("*.pdf")):
+            if not (IMPORTS / (pdf.stem + ".md")).exists():
+                continue
+            try:
+                CONVERTED.mkdir(exist_ok=True)
+                dest = CONVERTED / pdf.name
+                n = 2
+                while dest.exists():
+                    dest = CONVERTED / f"{pdf.stem} ({n}){pdf.suffix}"
+                    n += 1
+                pdf.rename(dest)
+                moved += 1
+            except OSError:
+                pass  # file locked (mid-conversion) - it'll archive next pass
+        return moved
+
     def refresh(self):
+        moved = self._archive_converted()
         self.listbox.delete(0, "end")
         pdfs = sorted(INBOX.glob("*.pdf"))
         for pdf in pdfs:
-            done = (IMPORTS / (pdf.stem + ".md")).exists()
-            mark = "✓ converted " if done else "• pending   "
-            self.listbox.insert("end", f" {mark} {pdf.name}")
-            self.listbox.itemconfig("end", fg="green" if done else "black")
+            self.listbox.insert("end", f" • pending    {pdf.name}")
         if not pdfs:
             self.listbox.insert("end", "  (inbox is empty: click Add PDFs...)")
+        if moved:
+            self.status.config(text=f"Archived {moved} converted PDF(s) to PDF Inbox\\Converted.", fg="gray")
 
     def poll(self):
         job = conversion_running()
@@ -168,6 +201,7 @@ class App(tk.Tk):
         ):
             return
         n = stop_conversion()
+        STATUS_FILE.unlink(missing_ok=True)  # don't leave a stale "converting X" note
         if n:
             self.status.config(text=f"Stopped ({n} process(es) ended). The inbox PDFs are untouched.", fg="#8f1d1d")
         else:

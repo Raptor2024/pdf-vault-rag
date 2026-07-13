@@ -19,8 +19,8 @@ echo.
 echo ============================================================
 echo  ALL DONE. Converted notes are in:
 echo  _pdf_imports (in your vault)
-echo  You can now move the PDFs out of PDF Inbox (they were
-echo  not changed). Press any key to close.
+echo  The converted PDFs were moved to PDF Inbox\Converted
+echo  automatically. Press any key to close.
 echo ============================================================
 pause >nul
 exit /b
